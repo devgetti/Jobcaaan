@@ -15,14 +15,18 @@ import android.graphics.Color;
 import android.support.v4.app.NotificationCompat;
 import android.view.Gravity;
 
-import jp.co.getti.lab.android.jobcaaan.BuildConfig;
 import jp.co.getti.lab.android.jobcaaan.R;
 
-
+/**
+ * ジョブカンNotification
+ */
 public class JobcaaanNotification {
 
-    /** Action 開始ボタン押下時 */
+    /** Action 打刻ボタン押下時 */
     public static final String ACTION_CLICK_STAMP = JobcaaanNotification.class.getName() + ".ACTION_CLICK_STAMP";
+
+    /** Action 打刻(位置取得有)ボタン押下時 */
+    public static final String ACTION_CLICK_STAMP_WITH_LOCATE = JobcaaanNotification.class.getName() + ".ACTION_CLICK_STAMP_WITH_LOCATE";
 
     /** Action 終了ボタン押下時 */
     public static final String ACTION_CLICK_SHUTDOWN = JobcaaanNotification.class.getName() + ".ACTION_CLICK_SHUTDOWN";
@@ -55,7 +59,9 @@ public class JobcaaanNotification {
             String action = intent.getAction();
             if (mCallback != null) {
                 if (ACTION_CLICK_STAMP.equals(action)) {
-                    mCallback.onClickStamp();
+                    mCallback.onClickStamp(false);
+                } else if (ACTION_CLICK_STAMP_WITH_LOCATE.equals(action)) {
+                    mCallback.onClickStamp(true);
                 } else if (ACTION_CLICK_SHUTDOWN.equals(action)) {
                     mCallback.onClickShutdown();
                 }
@@ -92,6 +98,15 @@ public class JobcaaanNotification {
             clickStampAction = new NotificationCompat.Action.Builder(android.R.drawable.ic_media_play, mService.getString(R.string.stamp), pendingIntent).build();
         }
 
+        // 打刻(現在位置)Action
+        NotificationCompat.Action clickStampWithLocateAction;
+        {
+            Intent intent = new Intent(ACTION_CLICK_STAMP_WITH_LOCATE);
+            intent.addCategory(new ComponentName(mService, mService.getClass()).getPackageName());
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(mService, requestCode++, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            clickStampWithLocateAction = new NotificationCompat.Action.Builder(android.R.drawable.ic_media_play, mService.getString(R.string.stamp_with_locate), pendingIntent).build();
+        }
+
         // ShutdownAction作成
         NotificationCompat.Action clickFinishAction;
         {
@@ -117,14 +132,16 @@ public class JobcaaanNotification {
                 .setContentTitle(mService.getString(R.string.app_name))
                 .extend(extender)
                 .setStyle(new NotificationCompat.InboxStyle().addLine(" "))
-                .addAction(clickStampAction);
-                //.addAction(clickFinishAction);
+                .addAction(clickStampAction)
+                .addAction(clickStampWithLocateAction);
+        //.addAction(clickFinishAction);
     }
 
     private static IntentFilter makeIntentFilter(Context context) {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addCategory(new ComponentName(context, context.getClass()).getPackageName());
         intentFilter.addAction(ACTION_CLICK_STAMP);
+        intentFilter.addAction(ACTION_CLICK_STAMP_WITH_LOCATE);
         intentFilter.addAction(ACTION_CLICK_SHUTDOWN);
         return intentFilter;
     }
@@ -132,7 +149,7 @@ public class JobcaaanNotification {
     /**
      * 更新
      *
-     * @param detail     詳細文言
+     * @param detail 詳細文言
      */
     public void update(String detail, String lauchActivity) {
 //        // タイトル
@@ -223,7 +240,7 @@ public class JobcaaanNotification {
     public interface INotificationAction {
 
         /** 打刻ボタン押下時 */
-        void onClickStamp();
+        void onClickStamp(boolean withLocate);
 
         /** シャットダウンボタン押下時 */
         void onClickShutdown();

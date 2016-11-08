@@ -10,6 +10,9 @@ android {
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
+
+        buildConfigField "String", "DUMMY_USER_CODE", "\"557748ec07ede4771c90186a56491625\""
+        buildConfigField "String", "DUMMY_GROUP_ID", "\"2\""
     }
     signingConfigs {
         release {
@@ -30,8 +33,10 @@ android {
     publishNonDefault true
     defaultPublishConfig "normalDebug"
     productFlavors {
+        develop {
+            applicationId "jp.co.getti.lab.android.jobcaaan.dev"
+        }
         normal {
-
 
         }
         own {

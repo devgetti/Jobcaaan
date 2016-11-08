@@ -1,11 +1,15 @@
 <resources>
     <string name="prompt_usercode">ユーザコード</string>
     <string name="prompt_groupid">グループID</string>
+    <string name="prompt_latitude">緯度</string>
+    <string name="prompt_longitude">経度</string>
     <string name="dialog_confirm">確認</string>
     <string name="stamp">打刻</string>
+    <string name="stamp_with_locate">打刻(現在位置)</string>
     <string name="save">保存</string>
     <string name="finish">終了</string>
     <string name="setting">設定</string>
+    <string name="location">位置情報</string>
     <string name="operation">操作</string>
     <string name="resident">常駐</string>
     <string name="resident_onoff">常駐/解除</string>
@@ -18,4 +22,6 @@
     <string name="error_failed_access_to_jobcan">ジョブカンWebへのアクセスに失敗しました。</string>
     <string name="error_failed_get_now_location">現在位置の取得に失敗しました。</string>
     <string name="error_required_location_accuracy">位置精度設定が許可されませんでした。</string>
+    <string name="warn_no_location">位置情報が取得できませんでした。</string>
+    <string name="error_invalid_location">位置情報が不正です。</string>
 </resources>

@@ -32,7 +32,6 @@ import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import jp.co.getti.lab.android.jobcaaan.BuildConfig;
 import jp.co.getti.lab.android.jobcaaan.R;
 import jp.co.getti.lab.android.jobcaaan.activity.MainActivity;
 import jp.co.getti.lab.android.jobcaaan.location.ILocationListenerStrategy;
@@ -40,6 +39,7 @@ import jp.co.getti.lab.android.jobcaaan.location.LocationListener;
 import jp.co.getti.lab.android.jobcaaan.location.LocationStatus;
 import jp.co.getti.lab.android.jobcaaan.notification.JobcaaanNotification;
 import jp.co.getti.lab.android.jobcaaan.utils.JobcanWebClient;
+import jp.co.getti.lab.android.jobcaaan.utils.LocationUtils;
 
 
 public class JobcaaanService extends Service {
@@ -47,6 +47,8 @@ public class JobcaaanService extends Service {
     public static final String PREF_USER_CODE = "UserCode";
     public static final String PREF_GROUP_ID = "GroupId";
     public static final String PREF_LAST_STAMP_DATE = "LastStampDate";
+    public static final String PREF_LATITUDE = "Latitude";
+    public static final String PREF_LONGITUDE = "Longitude";
 
     /** ロガー */
     private static final Logger logger = LoggerFactory.getLogger(JobcaaanService.class);
@@ -84,9 +86,9 @@ public class JobcaaanService extends Service {
 
         @Override
         @SuppressWarnings("all")
-        public void onClickStamp() {
+        public void onClickStamp(boolean withLocate) {
             logger.debug("onClickStamp");
-            if(!isStamping) {
+            if (!isStamping) {
                 isStamping = true;
                 // 通知バーを閉じる
                 try {
@@ -103,7 +105,7 @@ public class JobcaaanService extends Service {
                 } catch (Exception e) {
                 }
 
-                stamp(new StampCallback() {
+                stamp(withLocate, new StampCallback() {
                     @Override
                     public void onFinish() {
                         isStamping = false;
@@ -187,7 +189,7 @@ public class JobcaaanService extends Service {
         logger.debug("startResident");
         mNotification.show();
         String lastStamp = mPreferences.getString(PREF_LAST_STAMP_DATE, "");
-        if(!TextUtils.isEmpty(lastStamp)) {
+        if (!TextUtils.isEmpty(lastStamp)) {
             mNotification.update("最終打刻: " + lastStamp, MainActivity.class.getName());
         }
     }
@@ -216,15 +218,40 @@ public class JobcaaanService extends Service {
         }
     }
 
-    public void stamp(final StampCallback callback) {
-        logger.debug("stamp");
-        if (BuildConfig.FLAVOR.equals("own")) {
-            Location location = new Location("manual");
-            location.setLatitude(35.456060d);
-            location.setLongitude(139.629811d);
-            stamp(location, callback);
+    public void saveLocation(double latitude, double longitude) {
+        logger.debug("saveLocation");
+        String address = LocationUtils.getAddressInJapan(this, latitude, longitude);
+        if (TextUtils.isEmpty(address)) {
+            // 位置除法不正
+            showToast(getString(R.string.error_validate_setting));
         } else {
+            mPreferences.edit()
+                    .putString(JobcaaanService.PREF_LATITUDE, String.valueOf(latitude))
+                    .putString(JobcaaanService.PREF_LONGITUDE, String.valueOf(longitude))
+                    .apply();
+            showToast(getString(R.string.msg_save_setting));
+        }
+    }
+
+    public void stamp(boolean withLocate, final StampCallback callback) {
+        logger.debug("stamp");
+        if (withLocate) {
             stampWithGetLocation(callback);
+        } else {
+            String strLati = mPreferences.getString(PREF_LATITUDE, "");
+            String strLong = mPreferences.getString(PREF_LONGITUDE, "");
+            if (!TextUtils.isEmpty(strLati) && !TextUtils.isEmpty(strLong)) {
+                Location location = new Location("manual");
+                location.setLatitude(Double.parseDouble(strLati));
+                location.setLongitude(Double.parseDouble(strLong));
+                stamp(location, callback);
+            } else {
+                // 位置情報なし
+                showToast(getString(R.string.error_failed_access_to_jobcan) + "(位置情報未設定)");
+                if (callback != null) {
+                    callback.onFinish();
+                }
+            }
         }
     }
 
@@ -257,7 +284,7 @@ public class JobcaaanService extends Service {
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
-    private void stamp(Location location, final StampCallback callback) {
+    private void stamp(final Location location, final StampCallback callback) {
         // 入力値取得
         final String userCode = mPreferences.getString(PREF_USER_CODE, "");
         final String groupId = mPreferences.getString(PREF_GROUP_ID, "");
@@ -276,12 +303,13 @@ public class JobcaaanService extends Service {
             mJobcanWebClient.stampFlow(userCode, groupId, date, location, new JobcanWebClient.ResultCallback() {
                 @Override
                 public void onSuccess() {
-                    showToast(getString(R.string.msg_success_stamp) + "\n" + sdf.format(date));
+                    showToast(getString(R.string.msg_success_stamp) + "\n" + sdf.format(date)
+                            + "\n" + LocationUtils.getAddressInJapan(JobcaaanService.this, location.getLatitude(), location.getLongitude()));
                     // 最後の打刻時刻を保存
                     mPreferences.edit()
                             .putString(PREF_LAST_STAMP_DATE, sdf.format(date))
                             .apply();
-                    if(mNotification.isShow()) {
+                    if (mNotification.isShow()) {
                         mNotification.update("最終打刻: " + sdf.format(date), MainActivity.class.getName());
                     }
                     if (callback != null) {

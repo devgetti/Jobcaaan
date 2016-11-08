@@ -124,6 +124,31 @@ public class JobcanWebClient {
         client.newCall(request).enqueue(callback);
     }
 
+    public void stamp(String groupId, Date date, Callback callback) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        RequestBody body = new FormBody.Builder()
+                .add("lon", "-1")
+                .add("lat", "-1")
+                .add("year", Integer.toString(cal.get(Calendar.YEAR)))
+                .add("month", Integer.toString(cal.get(Calendar.MONTH) + 1))
+                .add("day", Integer.toString(cal.get(Calendar.DATE)))
+                .add("reason", "")
+                .add("time", "")
+                .add("group_id", groupId)
+                .add("position_id", "")
+                .add("adit_item", "打刻")
+                .add("yakin", "")
+                .build();
+        Request request = new Request.Builder()
+                .url("https://ssl.jobcan.jp/m/work/stamp-save-smartphone/")
+                .post(body)
+                .header("User-Agent", USER_AGENT)
+                .header("Accept-Language", ACCEPT_LANGUAGE)
+                .build();
+        client.newCall(request).enqueue(callback);
+    }
+
     public void stamp(String groupId, Date date, Location location, Callback callback) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
@@ -179,7 +204,7 @@ public class JobcanWebClient {
                             public void onResponse(Call call, Response response) throws IOException {
                                 if (response.isSuccessful()) {
                                     String body = response.body().string();
-                                    if (!body.contains("打刻失敗")) {
+                                    if (body.contains("打刻完了")) {
                                         // 打刻完了時
                                         if (resultCallback != null) {
                                             resultCallback.onSuccess();
