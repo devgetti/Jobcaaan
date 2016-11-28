@@ -1,5 +1,6 @@
 package jp.co.getti.lab.android.jobcaaan.service;
 
+import android.app.ActivityManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -27,17 +28,23 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import jp.co.getti.lab.android.jobcaaan.R;
 import jp.co.getti.lab.android.jobcaaan.activity.MainActivity;
+import jp.co.getti.lab.android.jobcaaan.alerm.BroadcastScheduler;
 import jp.co.getti.lab.android.jobcaaan.location.ILocationListenerStrategy;
 import jp.co.getti.lab.android.jobcaaan.location.LocationListener;
 import jp.co.getti.lab.android.jobcaaan.location.LocationStatus;
 import jp.co.getti.lab.android.jobcaaan.notification.JobcaaanNotification;
+import jp.co.getti.lab.android.jobcaaan.receiver.AlermReceiver;
 import jp.co.getti.lab.android.jobcaaan.utils.JobcanWebClient;
 import jp.co.getti.lab.android.jobcaaan.utils.LocationUtils;
 
@@ -49,10 +56,12 @@ public class JobcaaanService extends Service {
     public static final String PREF_LAST_STAMP_DATE = "LastStampDate";
     public static final String PREF_LATITUDE = "Latitude";
     public static final String PREF_LONGITUDE = "Longitude";
+    public static final String PREF_ALERM_TIMES = "AlermTimes";
 
     /** ロガー */
     private static final Logger logger = LoggerFactory.getLogger(JobcaaanService.class);
     private static final int NOTIFICATION_ID = 1111;
+    private static final int MAX_ALEARM_COUNT = 10;
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.JAPAN);
 
     private final IBinder mBinder = new LocalBinder();
@@ -146,6 +155,17 @@ public class JobcaaanService extends Service {
         context.unbindService(serviceConnection);
     }
 
+    public static boolean isRunning(Context context) {
+        ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningServiceInfo> runningService = am.getRunningServices(Integer.MAX_VALUE);
+        for (ActivityManager.RunningServiceInfo i : runningService) {
+            if (JobcaaanService.class.getName().equals(i.service.getClassName()) && context.getPackageName().equals(i.service.getPackageName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public void onCreate() {
         logger.debug("onCreate");
@@ -155,6 +175,15 @@ public class JobcaaanService extends Service {
         mNotification = new JobcaaanNotification(this, NOTIFICATION_ID, false, mNotificationAction);
         mJobcanWebClient = new JobcanWebClient();
         mLocationListener = new LocationListener(getApplicationContext(), mLocationListenerStrategy);
+
+        // ====== アラーム登録 ==================
+        Set<String> timeSet = mPreferences.getStringSet(PREF_ALERM_TIMES, new HashSet<String>());
+        try {
+            List<Integer[]> hhmmList = extractTime(timeSet);
+            registAlerm(hhmmList);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Nullable
@@ -222,7 +251,7 @@ public class JobcaaanService extends Service {
         logger.debug("saveLocation");
         String address = LocationUtils.getAddressInJapan(this, latitude, longitude);
         if (TextUtils.isEmpty(address)) {
-            // 位置除法不正
+            // 位置情報不正
             showToast(getString(R.string.error_validate_setting));
         } else {
             mPreferences.edit()
@@ -231,6 +260,63 @@ public class JobcaaanService extends Service {
                     .apply();
             showToast(getString(R.string.msg_save_setting));
         }
+    }
+
+    public void saveAlearm(Set<String> timeSet) {
+        logger.debug("saveAlearm");
+        List<Integer[]> hhmmList = null;
+        try {
+            hhmmList = extractTime(timeSet);
+        } catch (Exception e) {
+            showToast(getString(R.string.error_validate_setting));
+        }
+        if (hhmmList != null) {
+            // アラーム登録
+            registAlerm(hhmmList);
+
+            mPreferences.edit()
+                    .putStringSet(PREF_ALERM_TIMES, timeSet)
+                    .apply();
+            showToast(getString(R.string.msg_save_setting));
+        }
+    }
+
+    private void registAlerm(List<Integer[]> hhmmList) {
+        BroadcastScheduler bs = new BroadcastScheduler(getApplicationContext());
+
+        // 既存のアラーム登録をクリア
+        for (int i = 0; i < MAX_ALEARM_COUNT; i++) {
+            bs.cancel(i, AlermReceiver.class);
+        }
+
+        // アラーム登録
+        for (int i = 0; i < hhmmList.size() && i < MAX_ALEARM_COUNT; i++) {
+            Integer[] hhmm = hhmmList.get(i);
+            bs.set(i, AlermReceiver.class, hhmm[0], hhmm[1]);
+        }
+    }
+
+    private List<Integer[]> extractTime(Set<String> timeSet) throws Exception {
+        List<Integer[]> ret = new ArrayList<>();
+        if (timeSet != null) {
+            for (String time : timeSet) {
+                if (!TextUtils.isEmpty(time)) {
+                    String[] hhmm = time.split(":");
+                    Integer hour;
+                    Integer minute;
+                    if (hhmm.length == 2) {
+                        try {
+                            hour = Integer.parseInt(hhmm[0]);
+                            minute = Integer.parseInt(hhmm[1]);
+                        } catch (NumberFormatException e) {
+                            throw new Exception(e);
+                        }
+                        ret.add(new Integer[]{hour, minute});
+                    }
+                }
+            }
+        }
+        return ret;
     }
 
     public void stamp(boolean withLocate, final StampCallback callback) {

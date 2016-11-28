@@ -9,6 +9,12 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.EXPAND_STATUS_BAR"/>
 
+    <!-- パーミッション/機能　バイブレーション -->
+    <uses-permission android:name="android.permission.VIBRATE"/>
+
+    <!-- パーミッション/機能 WakeLock -->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -33,6 +39,8 @@
             android:name=".service.JobcaaanService"
             android:enabled="true"
             android:exported="false"/>
+
+        <receiver android:name=".receiver.AlermReceiver" />
     </application>
 
 </manifest>

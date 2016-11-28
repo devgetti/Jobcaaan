@@ -24,4 +24,5 @@
     <string name="error_required_location_accuracy">位置精度設定が許可されませんでした。</string>
     <string name="warn_no_location">位置情報が取得できませんでした。</string>
     <string name="error_invalid_location">位置情報が不正です。</string>
+    <string name="alerm">アラーム</string>
 </resources>

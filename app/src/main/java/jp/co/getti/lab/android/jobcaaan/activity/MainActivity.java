@@ -1,5 +1,6 @@
 package jp.co.getti.lab.android.jobcaaan.activity;
 
+import android.app.TimePickerDialog;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -25,12 +26,18 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Calendar;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 import jp.co.getti.lab.android.jobcaaan.BuildConfig;
 import jp.co.getti.lab.android.jobcaaan.R;
@@ -41,6 +48,7 @@ import jp.co.getti.lab.android.jobcaaan.service.JobcaaanService;
 import jp.co.getti.lab.android.jobcaaan.utils.LocationUtils;
 import jp.co.getti.lab.android.jobcaaan.utils.RequestLocationAccuracyHelper;
 import jp.co.getti.lab.android.jobcaaan.utils.RequestPermissionHelper;
+import jp.co.getti.lab.android.jobcaaan.view.AutoResizeTextView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -70,6 +78,12 @@ public class MainActivity extends AppCompatActivity {
 
     /** 住所View */
     protected TextView mTxtAddress;
+
+    /** アラーム時刻1 */
+    protected TextView mTxtAlerm1;
+
+    /** アラーム時刻2 */
+    protected TextView mTxtAlerm2;
 
     /** パーミッションリクエストHelper */
     private RequestPermissionHelper mRequestPermissionHelper;
@@ -151,6 +165,45 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    /** アラーム設定ボタンクリックListener */
+    private View.OnClickListener mBtnAlermClickListener = new View.OnClickListener() {
+
+        private AutoResizeTextView targetText;
+
+        private TimePickerDialog.OnTimeSetListener onTimeSetListener = new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                if (targetText != null) {
+                    targetText.setText(String.format(Locale.JAPAN, "%02d:%02d", hourOfDay, minute));
+                    targetText.resizeText();
+                }
+            }
+        };
+
+        @Override
+        public void onClick(View v) {
+
+            targetText = (AutoResizeTextView) v.getTag();
+
+            Calendar calendar = Calendar.getInstance();
+            int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
+            int minute = calendar.get(Calendar.MINUTE);
+
+            TimePickerDialog dialog = new TimePickerDialog(MainActivity.this,
+                    onTimeSetListener, hourOfDay, minute, true);
+            dialog.show();
+        }
+    };
+
+    /** アラーム設定クリアボタンクリックListener */
+    private View.OnClickListener mBtnAlermClearClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            AutoResizeTextView targetText = (AutoResizeTextView) v.getTag();
+            targetText.setText("");
+        }
+    };
+
     /** 常駐ボタンクリックListener */
     private View.OnClickListener mBtnResidentClickListener = new View.OnClickListener() {
         @Override
@@ -188,6 +241,24 @@ public class MainActivity extends AppCompatActivity {
                 String userCode = mTxtUserCode.getText().toString();
                 String groupId = mTxtGroupId.getText().toString();
                 mJobcaaanService.saveSetting(userCode, groupId);
+            }
+        }
+    };
+
+    /** アラーム保存ボタンクリックListener */
+    private View.OnClickListener mBtnSaveAlermClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            logger.debug("mBtnSaveAlermClickListener - onClick");
+            if (mJobcaaanService != null) {
+                Set<String> timeSet = new LinkedHashSet<>();
+                String[] times = new String[]{mTxtAlerm1.getText().toString(), mTxtAlerm2.getText().toString()};
+                for (String time : times) {
+                    if (!TextUtils.isEmpty(time)) {
+                        timeSet.add(time);
+                    }
+                }
+                mJobcaaanService.saveAlearm(timeSet);
             }
         }
     };
@@ -270,6 +341,21 @@ public class MainActivity extends AppCompatActivity {
 
         mLocationTextWatcher.onTextChanged("", 0, 0, 0);
 
+        // アラーム時刻
+        mTxtAlerm1 = (TextView) findViewById(R.id.txtAlerm1);
+        mTxtAlerm2 = (TextView) findViewById(R.id.txtAlerm2);
+
+        Set<String> timeSet = preferences.getStringSet(JobcaaanService.PREF_ALERM_TIMES, new HashSet<String>());
+        int cnt = 0;
+        for(String time: timeSet) {
+            if(cnt == 0) {
+                mTxtAlerm1.setText(time);
+            } else if(cnt == 1) {
+                mTxtAlerm2.setText(time);
+            }
+            cnt++;
+        }
+
         // LoadingView
         mLoadingView = View.inflate(this, R.layout.layout_loading, null);
 
@@ -307,6 +393,41 @@ public class MainActivity extends AppCompatActivity {
         Button btnSaveSetting = (Button) findViewById(R.id.btnSaveSetting);
         if (btnSaveSetting != null) {
             btnSaveSetting.setOnClickListener(mBtnSaveSettingClickListener);
+        }
+
+        // XXX アラームはいずれ動的個数可能にしたい
+        // アラーム１ボタン
+        ImageButton btnAlerm1 = (ImageButton) findViewById(R.id.btnAlerm1);
+        if (btnAlerm1 != null) {
+            btnAlerm1.setTag(findViewById(R.id.txtAlerm1));
+            btnAlerm1.setOnClickListener(mBtnAlermClickListener);
+        }
+
+        // アラーム２ボタン
+        ImageButton btnAlerm2 = (ImageButton) findViewById(R.id.btnAlerm2);
+        if (btnAlerm2 != null) {
+            btnAlerm2.setTag(findViewById(R.id.txtAlerm2));
+            btnAlerm2.setOnClickListener(mBtnAlermClickListener);
+        }
+
+        // アラーム１クリアボタン
+        ImageButton btnAlerm1Clear = (ImageButton)findViewById(R.id.btnAlerm1Clear);
+        if(btnAlerm1Clear != null) {
+            btnAlerm1Clear.setTag(findViewById(R.id.txtAlerm1));
+            btnAlerm1Clear.setOnClickListener(mBtnAlermClearClickListener);
+        }
+
+        // アラーム２クリアボタン
+        ImageButton btnAlerm2Clear = (ImageButton)findViewById(R.id.btnAlerm2Clear);
+        if(btnAlerm2Clear != null) {
+            btnAlerm2Clear.setTag(findViewById(R.id.txtAlerm2));
+            btnAlerm2Clear.setOnClickListener(mBtnAlermClearClickListener);
+        }
+
+        // アラーム保存ボタン
+        Button btnSaveAlerm = (Button) findViewById(R.id.btnSaveAlerm);
+        if (btnSaveAlerm != null) {
+            btnSaveAlerm.setOnClickListener(mBtnSaveAlermClickListener);
         }
 
         if (BuildConfig.DEBUG && BuildConfig.FLAVOR.endsWith("develop")) {
@@ -368,17 +489,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 ViewGroup contentRoot = (ViewGroup) MainActivity.this.findViewById(android.R.id.content);
-                assert (contentRoot != null);
-                if (enable) {
-                    if (mLoadingView.getParent() != null) {
-                        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-                        contentRoot.removeView(mLoadingView);
-                    }
-                } else {
-                    if (mLoadingView.getParent() == null) {
-                        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-                        contentRoot.addView(mLoadingView);
+                if (contentRoot != null) {
+                    if (enable) {
+                        if (mLoadingView.getParent() != null) {
+                            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                            contentRoot.removeView(mLoadingView);
+                        }
+                    } else {
+                        if (mLoadingView.getParent() == null) {
+                            getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                            contentRoot.addView(mLoadingView);
+                        }
                     }
                 }
             }
@@ -456,6 +578,7 @@ public class MainActivity extends AppCompatActivity {
 
     public boolean isNumeric(String str) {
         try {
+            @SuppressWarnings("unused")
             double d = Double.parseDouble(str);
         } catch (NumberFormatException nfe) {
             return false;
