@@ -39,12 +39,12 @@ import java.util.concurrent.TimeUnit;
 
 import jp.co.getti.lab.android.jobcaaan.R;
 import jp.co.getti.lab.android.jobcaaan.activity.MainActivity;
-import jp.co.getti.lab.android.jobcaaan.alerm.BroadcastScheduler;
 import jp.co.getti.lab.android.jobcaaan.location.ILocationListenerStrategy;
 import jp.co.getti.lab.android.jobcaaan.location.LocationListener;
 import jp.co.getti.lab.android.jobcaaan.location.LocationStatus;
 import jp.co.getti.lab.android.jobcaaan.notification.JobcaaanNotification;
-import jp.co.getti.lab.android.jobcaaan.receiver.AlermReceiver;
+import jp.co.getti.lab.android.jobcaaan.receiver.AlarmLogicReceiver;
+import jp.co.getti.lab.android.jobcaaan.utils.DailyAlarmManager;
 import jp.co.getti.lab.android.jobcaaan.utils.JobcanWebClient;
 import jp.co.getti.lab.android.jobcaaan.utils.LocationUtils;
 
@@ -166,6 +166,51 @@ public class JobcaaanService extends Service {
         return false;
     }
 
+    public static void reloadAlerm(Context context) {
+        logger.debug("reloadAlerm");
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        Set<String> timeSet = sharedPreferences.getStringSet(PREF_ALERM_TIMES, new HashSet<String>());
+        try {
+            List<Integer[]> hhmmList = extractTime(timeSet);
+
+            DailyAlarmManager dailyAlarmManager = new DailyAlarmManager(context);
+
+            dailyAlarmManager.clear();
+
+            // アラーム登録
+            for (int i = 0; i < hhmmList.size() && i < MAX_ALEARM_COUNT; i++) {
+                Integer[] hhmm = hhmmList.get(i);
+                dailyAlarmManager.set(AlarmLogicReceiver.class, hhmm[0], hhmm[1]);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static List<Integer[]> extractTime(Set<String> timeSet) throws Exception {
+        List<Integer[]> ret = new ArrayList<>();
+        if (timeSet != null) {
+            for (String time : timeSet) {
+                if (!TextUtils.isEmpty(time)) {
+                    String[] hhmm = time.split(":");
+                    Integer hour;
+                    Integer minute;
+                    if (hhmm.length == 2) {
+                        try {
+                            hour = Integer.parseInt(hhmm[0]);
+                            minute = Integer.parseInt(hhmm[1]);
+                        } catch (NumberFormatException e) {
+                            throw new Exception(e);
+                        }
+                        ret.add(new Integer[]{hour, minute});
+                    }
+                }
+            }
+        }
+        return ret;
+    }
+
     @Override
     public void onCreate() {
         logger.debug("onCreate");
@@ -177,13 +222,7 @@ public class JobcaaanService extends Service {
         mLocationListener = new LocationListener(getApplicationContext(), mLocationListenerStrategy);
 
         // ====== アラーム登録 ==================
-        Set<String> timeSet = mPreferences.getStringSet(PREF_ALERM_TIMES, new HashSet<String>());
-        try {
-            List<Integer[]> hhmmList = extractTime(timeSet);
-            registAlerm(hhmmList);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        reloadAlerm(this);
     }
 
     @Nullable
@@ -271,52 +310,16 @@ public class JobcaaanService extends Service {
             showToast(getString(R.string.error_validate_setting));
         }
         if (hhmmList != null) {
-            // アラーム登録
-            registAlerm(hhmmList);
-
+            // Preference保存
             mPreferences.edit()
                     .putStringSet(PREF_ALERM_TIMES, timeSet)
                     .apply();
+
+            // アラームリロード
+            reloadAlerm(this);
+
             showToast(getString(R.string.msg_save_setting));
         }
-    }
-
-    private void registAlerm(List<Integer[]> hhmmList) {
-        BroadcastScheduler bs = new BroadcastScheduler(getApplicationContext());
-
-        // 既存のアラーム登録をクリア
-        for (int i = 0; i < MAX_ALEARM_COUNT; i++) {
-            bs.cancel(i, AlermReceiver.class);
-        }
-
-        // アラーム登録
-        for (int i = 0; i < hhmmList.size() && i < MAX_ALEARM_COUNT; i++) {
-            Integer[] hhmm = hhmmList.get(i);
-            bs.set(i, AlermReceiver.class, hhmm[0], hhmm[1]);
-        }
-    }
-
-    private List<Integer[]> extractTime(Set<String> timeSet) throws Exception {
-        List<Integer[]> ret = new ArrayList<>();
-        if (timeSet != null) {
-            for (String time : timeSet) {
-                if (!TextUtils.isEmpty(time)) {
-                    String[] hhmm = time.split(":");
-                    Integer hour;
-                    Integer minute;
-                    if (hhmm.length == 2) {
-                        try {
-                            hour = Integer.parseInt(hhmm[0]);
-                            minute = Integer.parseInt(hhmm[1]);
-                        } catch (NumberFormatException e) {
-                            throw new Exception(e);
-                        }
-                        ret.add(new Integer[]{hour, minute});
-                    }
-                }
-            }
-        }
-        return ret;
     }
 
     public void stamp(boolean withLocate, final StampCallback callback) {

@@ -38,6 +38,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.TreeSet;
 
 import jp.co.getti.lab.android.jobcaaan.BuildConfig;
 import jp.co.getti.lab.android.jobcaaan.R;
@@ -345,7 +346,7 @@ public class MainActivity extends AppCompatActivity {
         mTxtAlerm1 = (TextView) findViewById(R.id.txtAlerm1);
         mTxtAlerm2 = (TextView) findViewById(R.id.txtAlerm2);
 
-        Set<String> timeSet = preferences.getStringSet(JobcaaanService.PREF_ALERM_TIMES, new HashSet<String>());
+        Set<String> timeSet = new TreeSet<>(preferences.getStringSet(JobcaaanService.PREF_ALERM_TIMES, new HashSet<String>()));
         int cnt = 0;
         for(String time: timeSet) {
             if(cnt == 0) {

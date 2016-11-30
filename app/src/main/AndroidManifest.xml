@@ -31,8 +31,8 @@
 
         <activity
             android:name=".activity.AlertActivity"
-            android:theme="@style/Theme.AppCompat.Translucent"
-            android:launchMode="singleInstance">
+            android:launchMode="singleInstance"
+            android:theme="@style/Theme.AppCompat.Translucent">
         </activity>
 
         <service
@@ -40,7 +40,21 @@
             android:enabled="true"
             android:exported="false"/>
 
-        <receiver android:name=".receiver.AlermReceiver" />
+        <receiver android:name=".receiver.AlarmReloadReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.TIMEZONE_CHANGED"/>
+                <action android:name="android.intent.action.TIME_SET"/>
+                <action android:name="android.intent.action.DATE_CHANGED"/>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name=".receiver.AlarmLogicReceiver"/>
+
+        <receiver android:name=".utils.DailyAlarmManager$Receiver"/>
     </application>
 
 </manifest>
