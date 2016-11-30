@@ -40,7 +40,7 @@ public class AlarmLogicReceiver extends BroadcastReceiver {
         PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Jobcaaan");
         wl.acquire(20000);
 
-        if(true) {
+        if(false) {
             if (JobcaaanService.isRunning(context)) {
                 JobcaaanService jobcaaanService = ((JobcaaanService.LocalBinder) peekService(context, new Intent(context, JobcaaanService.class))).getService();
                 jobcaaanService.stamp(false, new JobcaaanService.StampCallback() {
