@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Calendar;
 import java.util.Date;
 
+import jp.co.getti.lab.android.jobcaaan.utils.holiday.JapaneseHolidayUtils;
 
 public class DailyAlarmManager {
 
@@ -157,6 +158,13 @@ public class DailyAlarmManager {
             calTarget.add(Calendar.DAY_OF_MONTH, 1);
         }
 
+        // 土日祝を除いてさらにインクリメント
+        while (calTarget.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
+                || calTarget.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY
+                || JapaneseHolidayUtils.isHoliday(calTarget)) {
+            calTarget.add(Calendar.DAY_OF_MONTH, 1);
+        }
+
         // 最大IDから新しいアラームID作成
         int alarmId = mPreferences.getInt(PREF_MAX_ALARM_ID, -1) + 1;
         long time = calTarget.getTimeInMillis();
@@ -257,8 +265,20 @@ public class DailyAlarmManager {
                     context.sendBroadcast(new Intent(context, alarmInfo.clazz));
 
                     // 次回起動の時刻を算出
-                    alarmInfo.time = alarmInfo.time + (24 * 60 * 60 * 1000);    // 一日先
-                    logger.debug("next:");
+                    Calendar calTarget = Calendar.getInstance();
+                    calTarget.setTime(new Date(alarmInfo.time));
+
+                    // 本日分はこれで終わり
+                    calTarget.add(Calendar.DAY_OF_MONTH, 1);
+
+                    // 次回営業日までインクリメント
+                    while (calTarget.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
+                            || calTarget.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY
+                            || JapaneseHolidayUtils.isHoliday(calTarget)) {
+                        calTarget.add(Calendar.DAY_OF_MONTH, 1);
+                    }
+
+                    alarmInfo.time = calTarget.getTimeInMillis();
 
                     // アラーム登録
                     AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
