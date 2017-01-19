@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.CookieManager;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.FormBody;
 import okhttp3.HttpUrl;
+import okhttp3.JavaNetCookieJar;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -51,20 +53,20 @@ public class JobcanWebClient {
     public JobcanWebClient() {
         try {
             // http://stackoverflow.com/questions/34881775/automatic-cookie-handling-with-okhttp-3
-            CookieJar cookieJar = new CookieJar() {
-                private final HashMap<String, List<Cookie>> cookieStore = new HashMap<>();
-
-                @Override
-                public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
-                    cookieStore.put(url.host(), cookies);
-                }
-
-                @Override
-                public List<Cookie> loadForRequest(HttpUrl url) {
-                    List<Cookie> cookies = cookieStore.get(url.host());
-                    return cookies != null ? cookies : new ArrayList<Cookie>();
-                }
-            };
+//            CookieJar cookieJar = new CookieJar() {
+//                private final HashMap<String, List<Cookie>> cookieStore = new HashMap<>();
+//
+//                @Override
+//                public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
+//                    cookieStore.put(url.host(), cookies);
+//                }
+//
+//                @Override
+//                public List<Cookie> loadForRequest(HttpUrl url) {
+//                    List<Cookie> cookies = cookieStore.get(url.host());
+//                    return cookies != null ? cookies : new ArrayList<Cookie>();
+//                }
+//            };
 
             // 自己署名許可HttpClient作成
             X509TrustManager tm = new X509TrustManager() {
@@ -91,12 +93,12 @@ public class JobcanWebClient {
                     logger.debug(message);
                 }
             });
-            logging.setLevel(HttpLoggingInterceptor.Level.BASIC);
+            logging.setLevel(HttpLoggingInterceptor.Level.BODY);
 
             client = new OkHttpClient().newBuilder().sslSocketFactory(sslSocketFactory, tm)
                     //.retryOnConnectionFailure(true)
                     .addInterceptor(logging)
-                    .cookieJar(cookieJar)
+                    .cookieJar(new JavaNetCookieJar(new CookieManager()))
                     //.proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress("localhost", 8889)))
                     .connectTimeout(10, TimeUnit.SECONDS)
                     .readTimeout(10, TimeUnit.SECONDS)
