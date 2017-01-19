@@ -9,7 +9,19 @@ import org.slf4j.LoggerFactory;
 
 import jp.co.getti.lab.android.jobcaaan.service.JobcaaanService;
 
-
+/**
+ * アラームリロードBroadcastReceiver
+ * <pre>
+ *     各種Broadcastを受信しAlermの再登録を行うReceiver。
+ *
+ *     Androidの時計機能はすぐずれるため、自動補正もよく行われる。
+ *     タイマーは当然、登録時点の時間系で登録されるわけなので、
+ *     時刻補正が起きた場合には再登録してあげるのがセオリー。
+ *     また、AndroidのAlearmManagerは端末再起動時やアプリアップデート時にタイマーが消える。
+ *
+ *     本BroadcastReceiverはこれらのタイミング時に流れるBroadcastを受信し、アラームを再登録する。
+ * </pre>
+ */
 public class AlarmReloadReceiver extends BroadcastReceiver {
 
     /** ロガー */

@@ -51,6 +51,13 @@ import jp.co.getti.lab.android.jobcaaan.utils.RequestLocationAccuracyHelper;
 import jp.co.getti.lab.android.jobcaaan.utils.RequestPermissionHelper;
 import jp.co.getti.lab.android.jobcaaan.view.AutoResizeTextView;
 
+/**
+ * メインActivity
+ * <pre>
+ *     主に設定内容の入力などを行うためのActivity。
+ *     入力内容や実際の打刻動作などはJobcaaanServiceを経由して実行する。
+ * </pre>
+ */
 public class MainActivity extends AppCompatActivity {
 
     /** ロガー */

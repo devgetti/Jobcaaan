@@ -17,6 +17,31 @@ import java.util.Date;
 
 import jp.co.getti.lab.android.jobcaaan.utils.holiday.JapaneseHolidayUtils;
 
+/**
+ * 日時アラームManager
+ * <pre>
+ * 　　以下の問題に対応可能にすべく、精度が高い＆繰り返しを対応可能にするUtility。
+ *
+ *     AndroidのAlermManagerはSDKバージョンが上がるたびに登録方法が増え、
+ *     精度や繰り返し動作などの動作が変化している。
+ *
+ *     困るのが日時繰り返しのタイマーが必要な場合、以前まで利用できていた
+ *     setRepeatingの精度が大幅に悪くなった。
+ * 　　参考:https://akira-watson.com/android/setexact-setwindow.html
+ * 　　(実測したところ2、3分遅れる場合があった。こんなのはなくなってもよい。)
+ *
+ * 　　では精度の高い、setExactやsetExactAndAllowWhileIdleを使うとしてもこれの繰り返し版はない。
+ *
+ * 　　・アラーム登録時
+ * 　　　Preferenceにアラーム情報を保存([次回アラーム時刻,呼び出すBroadcastReceiverクラスFQDN])。
+ * 　　　内部Receiverを次回アラーム時刻に動作させるようアラーム登録
+ *
+ * 　　・アラーム実行時
+ * 　　　上記で登録したアラームにより、内部Receiverが起動。
+ * 　　　内部Receiver内でPreferenceからアラーム情報を読み込み、BroadcastReceiverへ送信。
+ * 　　　次回アラーム時刻でPrefereceのアラーム情報を更新。
+ * </pre>
+ */
 public class DailyAlarmManager {
 
     /** ロガー */

@@ -23,7 +23,12 @@ import jp.co.getti.lab.android.jobcaaan.service.JobcaaanService;
 
 import static android.content.Context.VIBRATOR_SERVICE;
 
-
+/**
+ * アラームロジックReceiver
+ * <pre>
+ *     アラーム時刻に動作するReceiver。
+ * </pre>
+ */
 public class AlarmLogicReceiver extends BroadcastReceiver {
 
     /** ロガー */

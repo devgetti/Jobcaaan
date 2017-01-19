@@ -10,6 +10,14 @@ import java.util.Locale;
 
 public class LocationUtils {
 
+    /**
+     * 緯度経度から住所文字列を取得する。
+     *
+     * @param context   コンテキスト
+     * @param latitude  緯度
+     * @param longitude 経度
+     * @return 住所文字列
+     */
     public static String getAddressInJapan(Context context, double latitude, double longitude) {
 
         Geocoder geocoder = new Geocoder(context, Locale.getDefault());

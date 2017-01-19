@@ -19,6 +19,10 @@ import jp.co.getti.lab.android.jobcaaan.R;
 
 /**
  * ジョブカンNotification
+ * <pre>
+ *     本アプリ用の固定ローカルNotification。
+ *     指定サービスをForegroundサービスとして本Notificationを固定表示する。
+ * </pre>
  */
 public class JobcaaanNotification {
 
