@@ -48,7 +48,7 @@ import jp.co.getti.lab.android.jobcaaan.utils.DailyAlarmManager;
 import jp.co.getti.lab.android.jobcaaan.utils.JobcanWebClient;
 import jp.co.getti.lab.android.jobcaaan.utils.LocationUtils;
 
-
+@SuppressWarnings("unused")
 public class JobcaaanService extends Service {
 
     public static final String PREF_USER_CODE = "UserCode";
@@ -151,7 +151,6 @@ public class JobcaaanService extends Service {
 
     public static void unbindService(Context context, ServiceConnection serviceConnection) {
         logger.debug("unbindService");
-        Intent intent = new Intent(context, JobcaaanService.class);
         context.unbindService(serviceConnection);
     }
 
@@ -443,7 +442,7 @@ public class JobcaaanService extends Service {
             public void run() {
 
                 LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                View layout = inflater.inflate(R.layout.layout_toast, null);
+                View layout = View.inflate(getApplicationContext(), R.layout.layout_toast, null);
 
                 // 画像を設定
                 ImageView toastImage = (ImageView) layout.findViewById(R.id.toastImage);
