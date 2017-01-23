@@ -48,29 +48,62 @@ import jp.co.getti.lab.android.jobcaaan.utils.DailyAlarmManager;
 import jp.co.getti.lab.android.jobcaaan.utils.JobcanWebClient;
 import jp.co.getti.lab.android.jobcaaan.utils.LocationUtils;
 
+/**
+ * Jobcaaanメインサービス
+ * <pre>
+ *     Jobcanへのアクセスや設定保存などを行うメインサービス。
+ * </pre>
+ */
 @SuppressWarnings("unused")
 public class JobcaaanService extends Service {
 
+    /** プリファレンスキー ユーザコード */
     public static final String PREF_USER_CODE = "UserCode";
+
+    /** プリファレンスキー グループID */
     public static final String PREF_GROUP_ID = "GroupId";
+
+    /** プリファレンスキー 最終打刻日時 */
     public static final String PREF_LAST_STAMP_DATE = "LastStampDate";
+
+    /** プリファレンスキー 緯度 */
     public static final String PREF_LATITUDE = "Latitude";
+
+    /** プリファレンスキー 経度 */
     public static final String PREF_LONGITUDE = "Longitude";
+
+    /** プリファレンスキー アラーム時刻群 */
     public static final String PREF_ALERM_TIMES = "AlermTimes";
 
     /** ロガー */
     private static final Logger logger = LoggerFactory.getLogger(JobcaaanService.class);
+
+    /** Notification ID */
     private static final int NOTIFICATION_ID = 1111;
+
     private static final int MAX_ALEARM_COUNT = 10;
+
+    /** 日付フォーマット */
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.JAPAN);
 
+    /** Binder */
     private final IBinder mBinder = new LocalBinder();
+
+    /** Jobcan Webクライアント */
     private JobcanWebClient mJobcanWebClient;
+
+    /** 位置情報Listener */
     private LocationListener mLocationListener;
+
+    /** Preference */
+    private SharedPreferences mPreferences;
+
+    /** Jobcaaan Notification */
+    private JobcaaanNotification mNotification;
+
+
     private CountDownLatch mLocationLatch;
     private Location mNowLocation;
-    private SharedPreferences mPreferences;
-    private JobcaaanNotification mNotification;
     private ILocationListenerStrategy mLocationListenerStrategy = new ILocationListenerStrategy() {
         @Override
         public void onDataReceived(long time, Location location) {
@@ -89,6 +122,10 @@ public class JobcaaanService extends Service {
             showToast(msg);
         }
     };
+
+    /**
+     * Notification Action
+     */
     private JobcaaanNotification.INotificationAction mNotificationAction = new JobcaaanNotification.INotificationAction() {
 
         private boolean isStamping = false;
@@ -131,29 +168,57 @@ public class JobcaaanService extends Service {
         }
     };
 
+    /**
+     * サービス開始
+     *
+     * @param context コンテキスト
+     */
     public static void startService(Context context) {
         logger.debug("startService");
         Intent intent = new Intent(context, JobcaaanService.class);
         context.startService(intent);
     }
 
+    /**
+     * サービス停止
+     *
+     * @param context コンテキスト
+     */
     public static void stopService(Context context) {
         logger.debug("stopService");
         Intent intent = new Intent(context, JobcaaanService.class);
         context.stopService(intent);
     }
 
+    /**
+     * サービスBind
+     *
+     * @param context           コンテキスト
+     * @param serviceConnection ServiceConnection
+     */
     public static void bindService(Context context, ServiceConnection serviceConnection) {
         logger.debug("bindService");
         Intent intent = new Intent(context, JobcaaanService.class);
         context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
+    /**
+     * サービスUnbind
+     *
+     * @param context           コンテキスト
+     * @param serviceConnection ServiceConnection
+     */
     public static void unbindService(Context context, ServiceConnection serviceConnection) {
         logger.debug("unbindService");
         context.unbindService(serviceConnection);
     }
 
+    /**
+     * サービス起動中かどうか
+     *
+     * @param context コンテキスト
+     * @return true:起動中
+     */
     public static boolean isRunning(Context context) {
         ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.RunningServiceInfo> runningService = am.getRunningServices(Integer.MAX_VALUE);
@@ -165,6 +230,11 @@ public class JobcaaanService extends Service {
         return false;
     }
 
+    /**
+     * アラーム再設定
+     *
+     * @param context コンテキスト
+     */
     public static void reloadAlerm(Context context) {
         logger.debug("reloadAlerm");
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -212,6 +282,7 @@ public class JobcaaanService extends Service {
         return ret;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void onCreate() {
         logger.debug("onCreate");
@@ -243,6 +314,7 @@ public class JobcaaanService extends Service {
         reloadAlerm(this);
     }
 
+    /** {@inheritDoc} */
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -250,12 +322,14 @@ public class JobcaaanService extends Service {
         return mBinder;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean onUnbind(Intent intent) {
         logger.debug("onUnbind");
         return super.onUnbind(intent);
     }
 
+    /** {@inheritDoc} */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         logger.debug("onStartCommand");
@@ -265,12 +339,16 @@ public class JobcaaanService extends Service {
 //        return super.onStartCommand(intent, flags, startId);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void onDestroy() {
         logger.debug("onDestroy");
         mLocationListener.stop();
     }
 
+    /**
+     * 常駐開始
+     */
     public void startResident() {
         logger.debug("startResident");
         mNotification.show();
@@ -280,16 +358,30 @@ public class JobcaaanService extends Service {
         }
     }
 
+    /**
+     * 常駐停止
+     */
     public void stopResident() {
         logger.debug("stopResident");
         mNotification.hide();
     }
 
+    /**
+     * 常駐中かどうか
+     *
+     * @return true:常駐中
+     */
     public boolean isResident() {
         logger.debug("isResident");
         return mNotification.isShow();
     }
 
+    /**
+     * 設定保存
+     *
+     * @param userCode ユーザコード
+     * @param groupId  グループID
+     */
     public void saveSetting(String userCode, String groupId) {
         logger.debug("saveSetting");
         if (TextUtils.isEmpty(userCode) || TextUtils.isEmpty(groupId)) {
@@ -304,6 +396,12 @@ public class JobcaaanService extends Service {
         }
     }
 
+    /**
+     * 位置保存
+     *
+     * @param latitude  緯度
+     * @param longitude 経度
+     */
     public void saveLocation(double latitude, double longitude) {
         logger.debug("saveLocation");
         String address = LocationUtils.getAddressInJapan(this, latitude, longitude);
@@ -319,6 +417,11 @@ public class JobcaaanService extends Service {
         }
     }
 
+    /**
+     * アラーム保存
+     *
+     * @param timeSet 時刻(hh:mm文字列)Set
+     */
     public void saveAlearm(Set<String> timeSet) {
         logger.debug("saveAlearm");
         List<Integer[]> hhmmList = null;
@@ -340,6 +443,12 @@ public class JobcaaanService extends Service {
         }
     }
 
+    /**
+     * 打刻
+     *
+     * @param withLocate 位置取得有無
+     * @param callback   コールバック
+     */
     public void stamp(boolean withLocate, final StampCallback callback) {
         logger.debug("stamp");
         if (withLocate) {
@@ -362,6 +471,11 @@ public class JobcaaanService extends Service {
         }
     }
 
+    /**
+     * 打刻(位置情報取得有)
+     *
+     * @param callback コールバック
+     */
     private void stampWithGetLocation(final StampCallback callback) {
         // 現在位置取得
         mLocationLatch = new CountDownLatch(1);
@@ -391,6 +505,12 @@ public class JobcaaanService extends Service {
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
+    /**
+     * 打刻
+     *
+     * @param location 位置情報
+     * @param callback コールバック
+     */
     private void stamp(final Location location, final StampCallback callback) {
         // 入力値取得
         final String userCode = mPreferences.getString(PREF_USER_CODE, "");
@@ -435,6 +555,11 @@ public class JobcaaanService extends Service {
         }
     }
 
+    /**
+     * Toast表示
+     *
+     * @param message メッセージ
+     */
     private void showToast(final String message) {
         Handler handler = new Handler(Looper.getMainLooper());
         handler.post(new Runnable() {
@@ -461,10 +586,19 @@ public class JobcaaanService extends Service {
         });
     }
 
+    /**
+     * 打刻コールバック
+     */
     public interface StampCallback {
+        /**
+         * 完了時
+         */
         void onFinish();
     }
 
+    /**
+     * ローカルバインダー
+     */
     public class LocalBinder extends Binder {
         public JobcaaanService getService() {
             return JobcaaanService.this;
