@@ -87,7 +87,7 @@ public class JobcanWebClient {
                     logger.debug(message);
                 }
             });
-            logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+            logging.setLevel(HttpLoggingInterceptor.Level.BASIC);
 
             client = new OkHttpClient().newBuilder().sslSocketFactory(sslSocketFactory, tm)
                     //.retryOnConnectionFailure(true)
