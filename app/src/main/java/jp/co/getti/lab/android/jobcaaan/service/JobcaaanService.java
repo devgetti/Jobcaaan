@@ -186,6 +186,8 @@ public class JobcaaanService extends Service {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        DailyAlarmManager.dumpPref(context);
     }
 
     private static List<Integer[]> extractTime(Set<String> timeSet) throws Exception {
@@ -220,6 +222,23 @@ public class JobcaaanService extends Service {
         mNotification = new JobcaaanNotification(this, NOTIFICATION_ID, false, mNotificationAction);
         mJobcanWebClient = new JobcanWebClient();
         mLocationListener = new LocationListener(getApplicationContext(), mLocationListenerStrategy);
+
+        // Dump
+        {
+            String userCode = mPreferences.getString(PREF_USER_CODE, "");
+            String groupId = mPreferences.getString(PREF_GROUP_ID, "");
+            String lastStamp = mPreferences.getString(PREF_LAST_STAMP_DATE, "");
+            String strLati = mPreferences.getString(PREF_LATITUDE, "");
+            String strLong = mPreferences.getString(PREF_LONGITUDE, "");
+            Set<String> timeSet = mPreferences.getStringSet(PREF_ALERM_TIMES, new HashSet<String>());
+
+            logger.debug(PREF_USER_CODE + ":" + userCode);
+            logger.debug(PREF_GROUP_ID + ":" + groupId);
+            logger.debug(PREF_LAST_STAMP_DATE + ":" + lastStamp);
+            logger.debug(PREF_LATITUDE + ":" + strLati);
+            logger.debug(PREF_LONGITUDE + ":" + strLong);
+            logger.debug(PREF_ALERM_TIMES + ":" + timeSet);
+        }
 
         // ====== アラーム登録 ==================
         reloadAlerm(this);

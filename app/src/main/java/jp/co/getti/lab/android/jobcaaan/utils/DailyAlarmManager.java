@@ -79,6 +79,17 @@ public class DailyAlarmManager {
         mAlarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
     }
 
+    public static void dumpPref(Context context) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        int maxAlarmId = preferences.getInt(PREF_MAX_ALARM_ID, -1);
+        logger.debug(PREF_MAX_ALARM_ID + ":" + maxAlarmId);
+        for (int i = 0; i <= maxAlarmId; i++) {
+            String key = PREF_ALARM_INFO_PREFIX + i;
+            String val = preferences.getString(key, null);
+            logger.debug(key + ":" + val);
+        }
+    }
+
     /**
      * アラーム情報保存
      *
@@ -190,7 +201,7 @@ public class DailyAlarmManager {
             calTarget.add(Calendar.DAY_OF_MONTH, 1);
         }
 
-        // 最大IDから新しいアラームID作成
+        // 最大IDから新しいアラームID作成(0スタート)
         int alarmId = mPreferences.getInt(PREF_MAX_ALARM_ID, -1) + 1;
         long time = calTarget.getTimeInMillis();
 
@@ -228,12 +239,10 @@ public class DailyAlarmManager {
     public void clear() {
         // 最大IDを取得
         int maxAlarmId = mPreferences.getInt(PREF_MAX_ALARM_ID, -1);
-        if (maxAlarmId != -1) {
-            for (int i = 0; i < maxAlarmId; i++) {
-                cancel(i);
-            }
-            mPreferences.edit().remove(PREF_MAX_ALARM_ID).apply();
+        for (int i = 0; i <= maxAlarmId; i++) {
+            cancel(i);
         }
+        mPreferences.edit().remove(PREF_MAX_ALARM_ID).apply();
     }
 
     /**
