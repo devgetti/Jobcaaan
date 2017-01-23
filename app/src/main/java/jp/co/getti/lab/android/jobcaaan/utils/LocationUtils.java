@@ -3,6 +3,7 @@ package jp.co.getti.lab.android.jobcaaan.utils;
 import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
+import android.os.AsyncTask;
 
 import java.io.IOException;
 import java.util.List;
@@ -40,5 +41,36 @@ public class LocationUtils {
             e.printStackTrace();
         }
         return (result.length() > 0) ? result.toString() : null;
+    }
+
+    /**
+     * 緯度経度から住所文字列を取得する。(非同期)
+     *
+     * @param context   コンテキスト
+     * @param latitude  緯度
+     * @param longitude 経度
+     * @param callback  コールバック
+     */
+    public static void getAddressInJapan(final Context context, final double latitude, final double longitude, final Callback callback) {
+        new AsyncTask<Void, Void, Void>() {
+
+            @Override
+            protected Void doInBackground(Void... params) {
+                callback.onSuccess(getAddressInJapan(context, latitude, longitude));
+                return null;
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    /**
+     * コールバック
+     */
+    public interface Callback {
+        /**
+         * 成功時
+         *
+         * @param address 住所文字列
+         */
+        void onSuccess(String address);
     }
 }
