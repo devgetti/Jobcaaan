@@ -62,6 +62,26 @@
 
         <!-- 日時アラームReceiver -->
         <receiver android:name=".utils.DailyAlarmManager$Receiver"/>
+
+        <!-- データDBコンテンツプロバイダ(汎用コンテンツプロバイダ) -->
+        <provider
+            android:name=".db.GeneralDBContentsProvider"
+            android:authorities="${applicationId}.data"
+            android:exported="false"
+            android:grantUriPermissions="true">
+
+            <meta-data
+                android:name="db_mng_class"
+                android:value="jp.co.getti.lab.android.jobcaaan.db.DataDBManager"/>
+
+            <meta-data
+                android:name="in_memory"
+                android:value="false"/>
+
+            <meta-data
+                android:name="in_ext_dir"
+                android:value="false"/>
+        </provider>
     </application>
 
 </manifest>

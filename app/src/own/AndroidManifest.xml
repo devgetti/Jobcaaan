@@ -83,18 +83,11 @@
 
             <meta-data
                 android:name="in_ext_dir"
-                android:value="false"/>
-
-            <!-- For Debug
-            <meta-data
-                android:name="in_ext_dir"
                 android:value="true"/>
 
             <meta-data
                 android:name="db_file_path"
-                android:value="/WorkerMonitor/${applicationId}/auth.db"/>
-             -->
-
+                android:value="/Jobcaaan/${applicationId}/data.db"/>
         </provider>
     </application>
 
