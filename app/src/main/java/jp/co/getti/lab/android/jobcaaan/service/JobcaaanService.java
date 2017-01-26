@@ -39,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 
 import jp.co.getti.lab.android.jobcaaan.R;
 import jp.co.getti.lab.android.jobcaaan.activity.MainActivity;
+import jp.co.getti.lab.android.jobcaaan.db.HistoryDataAccessor;
 import jp.co.getti.lab.android.jobcaaan.location.ILocationListenerStrategy;
 import jp.co.getti.lab.android.jobcaaan.location.LocationListener;
 import jp.co.getti.lab.android.jobcaaan.location.LocationStatus;
@@ -97,6 +98,9 @@ public class JobcaaanService extends Service {
 
     /** Preference */
     private SharedPreferences mPreferences;
+
+    /** 履歴データアクセサ */
+    private HistoryDataAccessor mHstoryDataAccessor;
 
     /** Jobcaaan Notification */
     private JobcaaanNotification mNotification;
@@ -292,6 +296,7 @@ public class JobcaaanService extends Service {
         mNotification = new JobcaaanNotification(this, NOTIFICATION_ID, false, mNotificationAction);
         mJobcanWebClient = new JobcanWebClient();
         mLocationListener = new LocationListener(getApplicationContext(), mLocationListenerStrategy);
+        mHstoryDataAccessor = new HistoryDataAccessor(getApplicationContext());
 
         // Dump
         {
@@ -464,6 +469,7 @@ public class JobcaaanService extends Service {
             } else {
                 // 位置情報なし
                 showToast(getString(R.string.error_failed_access_to_jobcan) + "(位置情報未設定)");
+                mHstoryDataAccessor.insert(new Date(), "打刻", "失敗(位置情報未設定)");
                 if (callback != null) {
                     callback.onFinish();
                 }
@@ -495,6 +501,7 @@ public class JobcaaanService extends Service {
                     stamp(mNowLocation, callback);
                 } else {
                     showToast(getString(R.string.error_failed_get_now_location));
+                    mHstoryDataAccessor.insert(new Date(), "打刻", "失敗(位置情報取得)");
                     if (callback != null) {
                         callback.onFinish();
                     }
@@ -520,6 +527,7 @@ public class JobcaaanService extends Service {
         if (TextUtils.isEmpty(userCode) || TextUtils.isEmpty(groupId)) {
             // ユーザ情報なし
             showToast(getString(R.string.error_failed_access_to_jobcan) + "(ユーザ情報未設定)");
+            mHstoryDataAccessor.insert(new Date(), "打刻", "失敗(ユーザ情報未設定)");
             if (callback != null) {
                 callback.onFinish();
             }
@@ -532,6 +540,7 @@ public class JobcaaanService extends Service {
                 public void onSuccess() {
                     showToast(getString(R.string.msg_success_stamp) + "\n" + sdf.format(date)
                             + "\n" + LocationUtils.getAddressInJapan(JobcaaanService.this, location.getLatitude(), location.getLongitude()));
+                    mHstoryDataAccessor.insert(new Date(), "打刻", "成功");
                     // 最後の打刻時刻を保存
                     mPreferences.edit()
                             .putString(PREF_LAST_STAMP_DATE, sdf.format(date))
@@ -547,6 +556,7 @@ public class JobcaaanService extends Service {
                 @Override
                 public void onError(String msg) {
                     showToast(getString(R.string.error_failed_access_to_jobcan) + "(" + msg + ")");
+                    mHstoryDataAccessor.insert(new Date(), "打刻", "失敗(Webアクセス)");
                     if (callback != null) {
                         callback.onFinish();
                     }

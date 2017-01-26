@@ -66,6 +66,7 @@
         <!-- 日時アラームReceiver -->
         <receiver android:name=".utils.DailyAlarmManager$Receiver"/>
 
+        <!-- データDBコンテンツプロバイダ(汎用コンテンツプロバイダ) -->
         <provider
             android:name=".db.GeneralDBContentsProvider"
             android:authorities="${applicationId}.data"
