@@ -45,12 +45,6 @@ public class DataDBManager extends GeneralDBContentsProvider.AbstDBManager {
     @Override
     public void open(Context context, String dbName) {
         mContext = context;
-        File parentDir = new File(dbName).getParentFile();
-        if (!parentDir.exists()) {
-            if (!new File(dbName).getParentFile().mkdirs()) {
-                throw new RuntimeException("Faild create dir. " + dbName);
-            }
-        }
         mAuthDB = new DataDB(mContext, dbName);
         mContext.registerReceiver(mUsbStateReceiver, new IntentFilter("android.hardware.usb.action.USB_STATE"));
     }

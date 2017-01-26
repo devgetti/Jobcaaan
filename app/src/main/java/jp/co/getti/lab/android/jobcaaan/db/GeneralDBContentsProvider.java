@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import java.io.File;
 import java.util.HashSet;
@@ -153,6 +154,8 @@ public class GeneralDBContentsProvider extends ContentProvider {
         // Uri評価
         validUri(uri);
 
+        createParentDir();
+
         // DB取得
         SQLiteDatabase db = mDBHelperManager.getReadableDatabase();
 
@@ -184,6 +187,8 @@ public class GeneralDBContentsProvider extends ContentProvider {
         // Uri評価
         validUri(uri);
 
+        createParentDir();
+
         // DB取得
         SQLiteDatabase db = mDBHelperManager.getWritableDatabase();
 
@@ -207,6 +212,8 @@ public class GeneralDBContentsProvider extends ContentProvider {
     public int bulkInsert(@NonNull Uri uri, @NonNull ContentValues[] values) {
         validUri(uri);
 
+        createParentDir();
+
         SQLiteDatabase db = mDBHelperManager.getWritableDatabase();
         db.beginTransaction();
         try {
@@ -224,6 +231,8 @@ public class GeneralDBContentsProvider extends ContentProvider {
     public int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         // Uri評価
         validUri(uri);
+
+        createParentDir();
 
         // DB取得
         SQLiteDatabase db = mDBHelperManager.getWritableDatabase();
@@ -245,6 +254,8 @@ public class GeneralDBContentsProvider extends ContentProvider {
     public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
         // Uri評価
         validUri(uri);
+
+        createParentDir();
 
         // DB取得
         SQLiteDatabase db = mDBHelperManager.getWritableDatabase();
@@ -278,6 +289,13 @@ public class GeneralDBContentsProvider extends ContentProvider {
         throw new IllegalArgumentException("unknown uri : " + uri);
     }
 
+    /**
+     * AndroidManifestから指定ContentProviderのauthority名を取得する。
+     *
+     * @param context コンテキスト
+     * @param clazz   ContentProviderクラス
+     * @return authority名
+     */
     public String getAuthority(Context context, Class<? extends ContentProvider> clazz) {
         String result = null;
         if (context != null) {
@@ -292,6 +310,16 @@ public class GeneralDBContentsProvider extends ContentProvider {
         return result;
     }
 
+    /**
+     * AndriodManifestから指定ContentProviderのメタデータ値を取得する。
+     *
+     * @param context      コンテキスト
+     * @param clazz        ContentProviderクラス
+     * @param key          Metaキー
+     * @param defaultValue デフォルト値
+     * @param <T>          取得値型
+     * @return メタデータ値
+     */
     @SuppressWarnings("unchecked")
     protected <T> T getMetaData(Context context, Class<? extends ContentProvider> clazz, String key, T defaultValue) {
         T result = null;
@@ -307,6 +335,29 @@ public class GeneralDBContentsProvider extends ContentProvider {
         return (result != null) ? result : defaultValue;
     }
 
+    /**
+     * DBファイルの親ディレクトリを作成
+     */
+    private void createParentDir() {
+        if (mDBHelperManager.getDatabaseName() != null) {
+            File parentDir = new File(mDBHelperManager.getDatabaseName()).getParentFile();
+            if (!parentDir.exists()) {
+                if (!parentDir.mkdirs()) {
+                    Log.w("db", "Faild create dir. " + mDBHelperManager.getDatabaseName());
+                } else {
+                    Log.i("db", "Success create dir. " + mDBHelperManager.getDatabaseName());
+                }
+            }
+        }
+    }
+
+    /**
+     * DBManager
+     * <pre>
+     *     本汎用クラスからDBにアクセスするために使用するDBとの受渡しになるクラス。
+     *     SQLiteHelperそのものでもよい。
+     * </pre>
+     */
     public static abstract class AbstDBManager {
 
         public AbstDBManager() {
