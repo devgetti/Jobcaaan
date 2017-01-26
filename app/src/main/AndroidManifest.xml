@@ -24,7 +24,7 @@
         android:theme="@style/AppTheme">
 
         <!-- メインActivity -->
-        <activity android:name=".activity.MainActivity">
+        <activity android:name=".activity.MainTabActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
