@@ -2,6 +2,7 @@
 <android.support.v4.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -37,7 +38,8 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/prompt_usercode"
                     android:maxLines="1"
-                    android:singleLine="true"/>
+                    android:singleLine="true"
+                    tools:ignore="Deprecated"/>
 
             </android.support.design.widget.TextInputLayout>
 
@@ -52,7 +54,8 @@
                     android:hint="@string/prompt_groupid"
                     android:inputType="number"
                     android:maxLines="1"
-                    android:singleLine="true"/>
+                    android:singleLine="true"
+                    tools:ignore="Deprecated"/>
             </android.support.design.widget.TextInputLayout>
 
             <Button
@@ -101,7 +104,8 @@
                             android:hint="@string/prompt_latitude"
                             android:inputType="numberDecimal"
                             android:maxLines="1"
-                            android:singleLine="true"/>
+                            android:singleLine="true"
+                            tools:ignore="Deprecated"/>
 
                     </android.support.design.widget.TextInputLayout>
 
@@ -117,7 +121,8 @@
                             android:hint="@string/prompt_longitude"
                             android:inputType="numberDecimal"
                             android:maxLines="1"
-                            android:singleLine="true"/>
+                            android:singleLine="true"
+                            tools:ignore="Deprecated"/>
 
                     </android.support.design.widget.TextInputLayout>
 
