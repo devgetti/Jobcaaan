@@ -17,6 +17,7 @@ import android.view.Gravity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jp.co.getti.lab.android.jobcaaan.BuildConfig;
 import jp.co.getti.lab.android.jobcaaan.R;
 import jp.co.getti.lab.android.jobcaaan.activity.MainActivity;
 import jp.co.getti.lab.android.jobcaaan.service.JobcaaanService;
@@ -45,7 +46,7 @@ public class AlarmLogicReceiver extends BroadcastReceiver {
         PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Jobcaaan");
         wl.acquire(20000);
 
-        if(false) {
+        if(BuildConfig.FLAVOR.equals("own")) {
             if (JobcaaanService.isRunning(context)) {
                 JobcaaanService jobcaaanService = ((JobcaaanService.LocalBinder) peekService(context, new Intent(context, JobcaaanService.class))).getService();
                 jobcaaanService.stamp(false, new JobcaaanService.StampCallback() {

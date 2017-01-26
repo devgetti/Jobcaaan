@@ -15,6 +15,9 @@
     <!-- パーミッション/機能 WakeLock -->
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
 
+    <!-- パーミッション/機能 外部記憶領域(SD) -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
     <application
         android:name=".Application"
         android:allowBackup="true"
@@ -24,7 +27,7 @@
         android:theme="@style/AppTheme">
 
         <!-- メインActivity -->
-        <activity android:name=".activity.MainActivity">
+        <activity android:name=".activity.MainTabActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -62,6 +65,36 @@
 
         <!-- 日時アラームReceiver -->
         <receiver android:name=".utils.DailyAlarmManager$Receiver"/>
+
+        <provider
+            android:name=".db.GeneralDBContentsProvider"
+            android:authorities="${applicationId}.data"
+            android:exported="false"
+            android:grantUriPermissions="true">
+
+            <meta-data
+                android:name="db_mng_class"
+                android:value="jp.co.getti.lab.android.jobcaaan.db.DataDBManager"/>
+
+            <meta-data
+                android:name="in_memory"
+                android:value="false"/>
+
+            <meta-data
+                android:name="in_ext_dir"
+                android:value="false"/>
+
+            <!-- For Debug
+            <meta-data
+                android:name="in_ext_dir"
+                android:value="true"/>
+
+            <meta-data
+                android:name="db_file_path"
+                android:value="/WorkerMonitor/${applicationId}/auth.db"/>
+             -->
+
+        </provider>
     </application>
 
 </manifest>

@@ -1,0 +1,25 @@
+<configuration>
+    <property name="LOG_DIR" value="${EXT_DIR:-/sdcard}/Jobcaaan/${PACKAGE_NAME}/logs" />
+
+    <appender name="logcat" class="ch.qos.logback.classic.android.LogcatAppender">
+        <encoder>
+            <pattern>%msg</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/app.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/app.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>2</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%-5r %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] [%-5le] %lo [%file:%line] - %msg %n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="DEBUG">
+        <appender-ref ref="logcat" />
+        <appender-ref ref="file" />
+    </root>
+</configuration>
