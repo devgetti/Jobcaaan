@@ -16,6 +16,7 @@ import android.support.v4.app.NotificationCompat;
 import android.view.Gravity;
 
 import jp.co.getti.lab.android.jobcaaan.R;
+import jp.co.getti.lab.android.jobcaaan.activity.MainTabActivity;
 
 /**
  * ジョブカンNotification
@@ -120,6 +121,14 @@ public class JobcaaanNotification {
             clickFinishAction = new NotificationCompat.Action.Builder(android.R.drawable.ic_menu_close_clear_cancel, mService.getString(R.string.finish), pendingIntent).build();
         }
 
+        // Notificationタップ時Intent
+        PendingIntent contentIntent;
+        {
+            Intent intent = new Intent(mService, MainTabActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            contentIntent = PendingIntent.getActivity(mService, 9999, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        }
+
         Bitmap bitmap = Bitmap.createBitmap(320, 320, Bitmap.Config.ARGB_8888);
         bitmap.eraseColor(Color.argb(255, 119, 170, 215));
 
@@ -134,6 +143,7 @@ public class JobcaaanNotification {
                 .setSmallIcon((mIsWear) ? R.mipmap.ic_launcher : R.mipmap.ic_status)
                 .setLargeIcon((mIsWear) ? null : BitmapFactory.decodeResource(mService.getResources(), R.mipmap.ic_launcher))
                 .setContentTitle(mService.getString(R.string.app_name))
+                .setContentIntent(contentIntent)
                 .extend(extender)
                 .setStyle(new NotificationCompat.InboxStyle().addLine(" "))
                 .addAction(clickStampAction)
@@ -155,7 +165,7 @@ public class JobcaaanNotification {
      *
      * @param detail 詳細文言
      */
-    public void update(String detail, String lauchActivity) {
+    public void update(String detail) {
 //        // タイトル
 //        this.mNotificationBuilder.setContentTitle(title);
 
@@ -168,15 +178,6 @@ public class JobcaaanNotification {
             }
         }
         this.mNotificationBuilder.setStyle(style);
-
-        // タップ時Action
-        PendingIntent contentIntent = null;
-        if (lauchActivity != null) {
-            Intent intent = new Intent(Intent.ACTION_MAIN);
-            intent.setComponent(new ComponentName(mService.getApplicationContext().getPackageName(), lauchActivity));
-            contentIntent = PendingIntent.getActivity(mService, 9999, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        }
-        this.mNotificationBuilder.setContentIntent(contentIntent);
 
         // Notification表示中であればそのまま表示更新
         if (mIsShown) {

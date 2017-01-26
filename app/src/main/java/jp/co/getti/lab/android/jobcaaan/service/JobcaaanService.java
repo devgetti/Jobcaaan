@@ -359,7 +359,7 @@ public class JobcaaanService extends Service {
         mNotification.show();
         String lastStamp = mPreferences.getString(PREF_LAST_STAMP_DATE, "");
         if (!TextUtils.isEmpty(lastStamp)) {
-            mNotification.update("最終打刻: " + lastStamp, MainActivity.class.getName());
+            mNotification.update("最終打刻: " + lastStamp);
         }
     }
 
@@ -546,7 +546,7 @@ public class JobcaaanService extends Service {
                             .putString(PREF_LAST_STAMP_DATE, sdf.format(date))
                             .apply();
                     if (mNotification.isShow()) {
-                        mNotification.update("最終打刻: " + sdf.format(date), MainActivity.class.getName());
+                        mNotification.update("最終打刻: " + sdf.format(date));
                     }
                     if (callback != null) {
                         callback.onFinish();
