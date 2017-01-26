@@ -147,7 +147,7 @@ public class HistoryTabFragment extends AbstTabFragment {
         public MyItemRecyclerViewAdapter(AbstTabFragment.OnInteractionListener listener) {
             //mValues = new ArrayList<>();    // TODO
             //mValues.add(new History(1, new Date(), "テスト", "打刻"));
-            mValues = new HistoryDataAccessor(getContext()).select(null, null, null, 30, true);
+            mValues = new HistoryDataAccessor(getContext()).select(null, null, null, 120, true);
             mListener = listener;
         }
 
