@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest package="jp.co.getti.lab.android.jobcaaan"
-          xmlns:android="http://schemas.android.com/apk/res/android">
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools">
 
     <!-- パーミッション/機能 ネットワーク -->
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -83,12 +84,13 @@
 
             <meta-data
                 android:name="in_ext_dir"
-                android:value="true"/>
+                android:value="true"
+                tools:replace="android:value" />
 
             <meta-data
                 android:name="db_file_path"
                 android:value="/Jobcaaan/${applicationId}/data.db"/>
         </provider>
     </application>
-
+x
 </manifest>
