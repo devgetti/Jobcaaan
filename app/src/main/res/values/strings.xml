@@ -11,6 +11,7 @@
     <string name="setting">設定</string>
     <string name="location">位置情報</string>
     <string name="operation">操作</string>
+    <string name="history">履歴</string>
     <string name="resident">常駐</string>
     <string name="resident_onoff">常駐/解除</string>
     <string name="loading">Loading...</string>
@@ -25,4 +26,6 @@
     <string name="warn_no_location">位置情報が取得できませんでした。</string>
     <string name="error_invalid_location">位置情報が不正です。</string>
     <string name="alerm">アラーム</string>
+
+    <string name="section_format">Hello World from section: %1$d</string>
 </resources>
