@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import jp.co.getti.lab.android.jobcaaan.BuildConfig;
 import jp.co.getti.lab.android.jobcaaan.R;
 import jp.co.getti.lab.android.jobcaaan.activity.MainActivity;
+import jp.co.getti.lab.android.jobcaaan.activity.MainTabActivity;
 import jp.co.getti.lab.android.jobcaaan.service.JobcaaanService;
 
 import static android.content.Context.VIBRATOR_SERVICE;
@@ -79,6 +80,14 @@ public class AlarmLogicReceiver extends BroadcastReceiver {
                     .setCustomSizePreset(NotificationCompat.WearableExtender.SIZE_LARGE)
                     .setBackground(bitmap);
 
+            // Notificationタップ時Intent
+            PendingIntent contentIntent;
+            {
+                Intent tapIntent = new Intent(context, MainTabActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                contentIntent = PendingIntent.getActivity(context, 9999, tapIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            }
+
             NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
             NotificationCompat.Builder mNotificationBuilder = new NotificationCompat.Builder(context)
@@ -89,7 +98,7 @@ public class AlarmLogicReceiver extends BroadcastReceiver {
                     .setStyle(new NotificationCompat.InboxStyle().addLine(" "))
                     .setVibrate(pattern)
                     .setContentText("打刻したら？")
-                    .setContentIntent(PendingIntent.getActivity(context, 0, new Intent(context, MainActivity.class), 0))
+                    .setContentIntent(contentIntent)
                     .setLights(0xffcccccc, 3000, 1000);
 
             nm.notify(10101, mNotificationBuilder.build());
