@@ -1,5 +1,6 @@
 package jp.co.getti.lab.android.jobcaaan.fragment;
 
+import android.app.Activity;
 import android.app.TimePickerDialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -123,12 +124,15 @@ public class SettingTabFragment extends AbstTabFragment {
                 LocationUtils.getAddressInJapan(getActivity(), Double.parseDouble(strLat), Double.parseDouble(strLong), new LocationUtils.Callback() {
                     @Override
                     public void onSuccess(final String result) {
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                mTxtAddress.setText((result != null) ? result : "");
-                            }
-                        });
+                        Activity activity = getActivity();
+                        if(activity != null) {
+                            activity.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mTxtAddress.setText((result != null) ? result : "");
+                                }
+                            });
+                        }
                     }
                 });
             } else {
