@@ -34,9 +34,6 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
-import butterknife.Bind;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 import jp.co.getti.lab.android.jobcaaan.BuildConfig;
 import jp.co.getti.lab.android.jobcaaan.R;
 import jp.co.getti.lab.android.jobcaaan.location.ILocationListenerStrategy;
@@ -45,6 +42,9 @@ import jp.co.getti.lab.android.jobcaaan.location.LocationStatus;
 import jp.co.getti.lab.android.jobcaaan.service.JobcaaanService;
 import jp.co.getti.lab.android.jobcaaan.utils.LocationUtils;
 import jp.co.getti.lab.android.jobcaaan.utils.RequestLocationAccuracyHelper;
+import jp.co.getti.lab.android.jobcaaan.utils.viewbinder.Bind;
+import jp.co.getti.lab.android.jobcaaan.utils.viewbinder.OnClick;
+import jp.co.getti.lab.android.jobcaaan.utils.viewbinder.SimpleViewBinderUtils;
 import jp.co.getti.lab.android.jobcaaan.view.AutoResizeTextView;
 
 @SuppressWarnings("unused,WeakerAccess")
@@ -187,7 +187,7 @@ public class SettingTabFragment extends AbstTabFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         logger.debug("onCreateView");
         View view = inflater.inflate(R.layout.fragment_setting_tab, container, false);
-        ButterKnife.bind(this, view);
+        SimpleViewBinderUtils.bind(this, view);
 
         // ======= View初期化 =================
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -450,11 +450,11 @@ public class SettingTabFragment extends AbstTabFragment {
             isError = true;
         }
 
-        if (TextUtils.isEmpty(address)) {
-            mTxtLatitude.setError(getString(R.string.error_invalid_location));
-            mTxtLatitude.requestFocus();
-            isError = true;
-        }
+//        if (TextUtils.isEmpty(address)) {
+//            mTxtLatitude.setError(getString(R.string.error_invalid_location));
+//            mTxtLatitude.requestFocus();
+//            isError = true;
+//        }
 
         return !isError;
     }

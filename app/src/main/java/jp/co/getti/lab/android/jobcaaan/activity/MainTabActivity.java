@@ -22,8 +22,6 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import butterknife.Bind;
-import butterknife.ButterKnife;
 import jp.co.getti.lab.android.jobcaaan.R;
 import jp.co.getti.lab.android.jobcaaan.fragment.AbstTabFragment;
 import jp.co.getti.lab.android.jobcaaan.fragment.HistoryTabFragment;
@@ -31,6 +29,8 @@ import jp.co.getti.lab.android.jobcaaan.fragment.OperationTabFragment;
 import jp.co.getti.lab.android.jobcaaan.fragment.SettingTabFragment;
 import jp.co.getti.lab.android.jobcaaan.service.JobcaaanService;
 import jp.co.getti.lab.android.jobcaaan.utils.RequestPermissionHelper;
+import jp.co.getti.lab.android.jobcaaan.utils.viewbinder.Bind;
+import jp.co.getti.lab.android.jobcaaan.utils.viewbinder.SimpleViewBinderUtils;
 
 /**
  * メインTabActivity
@@ -69,7 +69,7 @@ public class MainTabActivity extends AppCompatActivity implements AbstTabFragmen
         setContentView(R.layout.activity_main_tab);
 
         // Viewバインド
-        ButterKnife.bind(this);
+        SimpleViewBinderUtils.bind(this);
 
         //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);

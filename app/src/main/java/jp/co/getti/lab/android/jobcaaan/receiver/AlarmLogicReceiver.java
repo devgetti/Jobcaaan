@@ -8,11 +8,14 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.PowerManager;
 import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 import android.view.Gravity;
+import android.widget.Toast;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +25,7 @@ import jp.co.getti.lab.android.jobcaaan.R;
 import jp.co.getti.lab.android.jobcaaan.activity.MainActivity;
 import jp.co.getti.lab.android.jobcaaan.activity.MainTabActivity;
 import jp.co.getti.lab.android.jobcaaan.service.JobcaaanService;
+import jp.co.getti.lab.android.jobcaaan.utils.CybozuWebClient;
 
 import static android.content.Context.VIBRATOR_SERVICE;
 
@@ -38,7 +42,7 @@ public class AlarmLogicReceiver extends BroadcastReceiver {
 
     /** {@inheritDoc} */
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(final Context context, Intent intent) {
         String action = intent.getAction();
         logger.debug("onReceive action:" + action + " myPackage:" + context.getPackageName());
 
@@ -56,6 +60,35 @@ public class AlarmLogicReceiver extends BroadcastReceiver {
                         logger.info("打刻完了");
                     }
                 });
+
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... voids) {
+                        CybozuWebClient cybozuWebClient = new CybozuWebClient();
+                        cybozuWebClient.stampFlowLogout("a-kosuge@netwrk.co.jp", "tmgetti3!", new CybozuWebClient.ResultCallback() {
+                            @Override
+                            public void onSuccess() {
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(context, "Cyboze打刻成功", Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onError(final String msg) {
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(context, "Cyboze打刻失敗 " + msg, Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
+                        });
+                        return null;
+                    }
+                }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
                 final Vibrator vibrator = (Vibrator) context.getSystemService(VIBRATOR_SERVICE);
                 long[] pattern = {500, 200, 150, 200, 150, 200, 500, 200, 150, 200, 150, 200, 500, 150, 200, 150, 200, 150, 200, 150, 200, 150, 200, 150, 200, 150, 200};

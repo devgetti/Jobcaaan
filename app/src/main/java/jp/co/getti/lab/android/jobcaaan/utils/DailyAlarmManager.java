@@ -191,6 +191,7 @@ public class DailyAlarmManager {
 
         // 現在日時より過ぎていた場合は、次の日からセット
         if (calTarget.getTimeInMillis() < calNow.getTimeInMillis()) {
+            logger.debug("Target is over.Add day to target." + calTarget);
             calTarget.add(Calendar.DAY_OF_MONTH, 1);
         }
 
@@ -198,6 +199,7 @@ public class DailyAlarmManager {
         while (calTarget.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
                 || calTarget.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY
                 || JapaneseHolidayUtils.isHoliday(calTarget)) {
+            logger.debug("Target is holiday.Add day to target." + calTarget);
             calTarget.add(Calendar.DAY_OF_MONTH, 1);
         }
 

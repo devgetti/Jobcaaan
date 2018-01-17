@@ -32,7 +32,7 @@ public class LocationUtils {
                 if ("JP".equals(address.getCountryCode())) {
                     int idx = address.getMaxAddressLineIndex();
                     // 1番目のレコードは国名のため省略
-                    for (int i = 1; i <= idx; i++) {
+                    for (int i = 0; i <= idx; i++) {
                         result.append(address.getAddressLine(i));
                     }
                 }

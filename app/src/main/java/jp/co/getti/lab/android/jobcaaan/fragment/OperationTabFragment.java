@@ -14,10 +14,10 @@ import android.view.ViewGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 import jp.co.getti.lab.android.jobcaaan.R;
 import jp.co.getti.lab.android.jobcaaan.service.JobcaaanService;
+import jp.co.getti.lab.android.jobcaaan.utils.viewbinder.OnClick;
+import jp.co.getti.lab.android.jobcaaan.utils.viewbinder.SimpleViewBinderUtils;
 
 /**
  * 操作フラグメント
@@ -77,7 +77,7 @@ public class OperationTabFragment extends AbstTabFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         logger.debug("onCreateView");
         View view = inflater.inflate(R.layout.fragment_operation_tab, container, false);
-        ButterKnife.bind(this, view);
+        SimpleViewBinderUtils.bind(this, view);
         return view;
     }
 
