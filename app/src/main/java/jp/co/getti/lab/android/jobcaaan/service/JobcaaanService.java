@@ -37,14 +37,15 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import jp.co.getti.lab.android.jobcaaan.BuildConfig;
 import jp.co.getti.lab.android.jobcaaan.R;
-import jp.co.getti.lab.android.jobcaaan.activity.MainActivity;
 import jp.co.getti.lab.android.jobcaaan.db.HistoryDataAccessor;
 import jp.co.getti.lab.android.jobcaaan.location.ILocationListenerStrategy;
 import jp.co.getti.lab.android.jobcaaan.location.LocationListener;
 import jp.co.getti.lab.android.jobcaaan.location.LocationStatus;
 import jp.co.getti.lab.android.jobcaaan.notification.JobcaaanNotification;
 import jp.co.getti.lab.android.jobcaaan.receiver.AlarmLogicReceiver;
+import jp.co.getti.lab.android.jobcaaan.utils.CybozuWebClient;
 import jp.co.getti.lab.android.jobcaaan.utils.DailyAlarmManager;
 import jp.co.getti.lab.android.jobcaaan.utils.JobcanWebClient;
 import jp.co.getti.lab.android.jobcaaan.utils.LocationUtils;
@@ -92,6 +93,8 @@ public class JobcaaanService extends Service {
 
     /** Jobcan Webクライアント */
     private JobcanWebClient mJobcanWebClient;
+
+    private CybozuWebClient mCybozuWebClient;
 
     /** 位置情報Listener */
     private LocationListener mLocationListener;
@@ -297,6 +300,7 @@ public class JobcaaanService extends Service {
         mJobcanWebClient = new JobcanWebClient();
         mLocationListener = new LocationListener(getApplicationContext(), mLocationListenerStrategy);
         mHstoryDataAccessor = new HistoryDataAccessor(getApplicationContext());
+        mCybozuWebClient = new CybozuWebClient();
 
         // Dump
         {
@@ -474,6 +478,21 @@ public class JobcaaanService extends Service {
                     callback.onFinish();
                 }
             }
+        }
+
+        if (BuildConfig.FLAVOR.equals("own")) {
+            CybozuWebClient cybozuWebClient = new CybozuWebClient();
+            cybozuWebClient.stampFlowLogout("a-kosuge@netwrk.co.jp", "*****", new CybozuWebClient.ResultCallback() {
+                @Override
+                public void onSuccess() {
+                    showToast("Cyboze打刻成功");
+                }
+
+                @Override
+                public void onError(String msg) {
+                    showToast("Cyboze打刻失敗\n" + msg);
+                }
+            });
         }
     }
 
