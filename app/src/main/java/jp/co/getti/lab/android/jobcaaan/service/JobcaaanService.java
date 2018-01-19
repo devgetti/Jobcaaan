@@ -481,15 +481,14 @@ public class JobcaaanService extends Service {
         }
 
         if (BuildConfig.FLAVOR.equals("own")) {
-            CybozuWebClient cybozuWebClient = new CybozuWebClient();
-            cybozuWebClient.stampFlowLogout("a-kosuge@netwrk.co.jp", "*****", new CybozuWebClient.ResultCallback() {
+            mCybozuWebClient.stampFlow("a-kosuge@netwrk.co.jp", "******", new CybozuWebClient.ResultCallback() {
                 @Override
                 public void onSuccess() {
                     showToast("Cyboze打刻成功");
                 }
 
                 @Override
-                public void onError(String msg) {
+                public void onError(String msg, Throwable e) {
                     showToast("Cyboze打刻失敗\n" + msg);
                 }
             });
